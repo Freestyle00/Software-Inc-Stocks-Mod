@@ -418,6 +418,7 @@ namespace Software_Inc_Stocks_Mod
 			}
 		}
 
+		private void THISBREAKEVERTHING isahdüpajhdüpiaj düpajdüpoja düpo
 		private void InitUI()
 		{
 			DebugConsoleLog("InitUI called");
