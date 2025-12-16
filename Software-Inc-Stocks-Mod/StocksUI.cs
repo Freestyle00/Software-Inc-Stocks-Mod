@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -41,8 +42,45 @@ namespace Software_Inc_Stocks_Mod
 				closeButton.onClick.AddListener(() => _stockWindow.Close());
 			}
 			InitList();
-			WindowManager.AddElementToWindow(_stockListView.gameObject, _stockWindow, new Rect(0f, 200f, 0, -220), new Rect(0f, 0f, 1f, 1f));
+			InitGraph();
+			WindowManager.AddElementToWindow(
+				_stocksLineChart.gameObject,
+				_stockWindow,
+				new Rect(0f, 0f, 0f, 0f),
+				new Rect(0f, 0f, 0.8f, 0.3f)
+			);
+			_stocksLineChart.transform.SetAsLastSibling();
+			WindowManager.AddElementToWindow(
+				_stockListView.gameObject,
+				_stockWindow,
+				new Rect(0f, 0f, 0f, 0f),
+				new Rect(0f, 0.3f, 1f, 0.65f)
+			);
 			_stockWindow.Show();
+		}
+		private void InitGraph()
+		{
+			GameObject chartGO = new GameObject("StocksLineChart");
+
+			// Add RectTransform implicitly
+			RectTransform rt = chartGO.AddComponent<RectTransform>();
+
+			_stocksLineChart = chartGO.AddComponent<GUILineChart>();
+
+			// Graphic will auto-create CanvasRenderer internally
+			_stocksLineChart.material = Graphic.defaultGraphicMaterial;
+			_stocksLineChart.raycastTarget = true;
+
+			_stocksLineChart.Colors = HUD.GetThemeColors().ToList();
+
+			_stocksLineChart.Values = new List<List<float>>
+	{
+		new List<float> { 1f, 2f, 3f, 4f, 5f }
+	};
+
+			_stocksLineChart.Cached = false;
+
+			_stocksLineChart.SetVerticesDirty();
 		}
 		private void InitList()
 		{
