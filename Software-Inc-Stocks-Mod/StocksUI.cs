@@ -11,31 +11,16 @@ namespace Software_Inc_Stocks_Mod
 	public class StocksUI : MonoBehaviour
 	{
 		private GUIWindow _stockWindow;
+		private GUILineChart _stocksLineChart;
 		private GUIListView _stockListView;
 		private Text _displayText;
 		private System.Random _random;
 		private List<string> _randomTexts;
 		private const int SHARES_ALL = 2147483647;
 		private const float BUTTON_WIDTH = 50f;
-
-		private void InitializeTexts()
-		{
-			_randomTexts = new List<string>();
-			_randomTexts.Add("Stock prices fluctuate daily!");
-			_randomTexts.Add("Diversify your portfolio wisely.");
-			_randomTexts.Add("Market trends are unpredictable.");
-			_randomTexts.Add("Buy low, sell high!");
-			_randomTexts.Add("Risk management is key.");
-			_randomTexts.Add("Monitor your investments closely.");
-			_randomTexts.Add("Long-term growth requires patience.");
-			_randomTexts.Add("Market volatility creates opportunities.");
-			_randomTexts.Add("Research before you invest.");
-			_randomTexts.Add("Compound interest works wonders.");
-		}
 		private void Awake()
 		{
-			_random = new System.Random();
-			InitializeTexts();
+
 		}
 		private void Update()
 		{
@@ -47,22 +32,22 @@ namespace Software_Inc_Stocks_Mod
 			_stockWindow = WindowManager.SpawnWindow();
 			_stockWindow.InitialTitle = _stockWindow.TitleText.text = _stockWindow.NonLocTitle = Main._Name;
 			_stockWindow.MinSize.x = 600f;
-			_stockWindow.MinSize.y = 400f;
+			_stockWindow.MinSize.y = 500f;
 			_stockWindow.name = "StockProInterface";
 			_stockWindow.MainPanel.name = "StockProMainPanel";
-
 			Button closeButton = _stockWindow.GetComponentsInChildren<Button>().SingleOrDefault(x => x.name == "CloseButton");
 			if (closeButton != null)
 			{
 				closeButton.onClick.AddListener(() => _stockWindow.Close());
 			}
 			InitList();
-			//CreateTextDisplay();
+			WindowManager.AddElementToWindow(_stockListView.gameObject, _stockWindow, new Rect(0f, 200f, 0, -220), new Rect(0f, 0f, 1f, 1f));
 			_stockWindow.Show();
 		}
 		private void InitList()
 		{
 			CompanyDetailWindow companyDetailWindow;
+			GUIListView.ColumnDef companyLogo = new ColumnDefinition<Company>(header: "Logo", label: (Company c) => (object)c, comparison: c => c.Name, vola: true, width: 24f, filterType: GUIListView.FilterType.None, filter: null, typeOverride: GUIColumn.ColumnType.Logo);
 			GUIListView.ColumnDef companyNameColumn = new ColumnDefinition<Company>(header: "Company", label: x => x.Name, vola: false, width: 200f);
 			GUIListView.ColumnDef companyWorthColumn = new ColumnDefinition<Company>(header: "Worth", label: x => x.GetMoneyWithInsurance(), vola: true, width: 100f);
 			GUIListView.ColumnDef companySharesColumn = new ColumnDefinition<Company>(header: "Shares", label: x => x.Shares, vola: false, width: 100f);
@@ -82,6 +67,7 @@ namespace Software_Inc_Stocks_Mod
 			GUIListView.ColumnDef sellAll      = new ColumnDefinition<Company>("-ALL",  company => { ConsoleStocksOps("s", company.ID, company.Shares); }, BUTTON_WIDTH);
 
 			_stockListView = WindowManager.SpawnList();
+			_stockListView.AddColumn(companyLogo);
 			_stockListView.AddColumn(companyNameColumn);
 			_stockListView.AddColumn(companyWorthColumn);
 			_stockListView.AddColumn(companySharesColumn);
@@ -99,18 +85,14 @@ namespace Software_Inc_Stocks_Mod
 			_stockListView.AddColumn(sellThousand);
 			_stockListView.AddColumn(sellAll);
 
-
-			WindowManager.AddElementToWindow(
-				_stockListView.gameObject,
-				_stockWindow,
-				new Rect(10f, 10f, 580f, 200f),
-				new Rect(0f, 0f, 0f, 0f)
-				);
 			UpdateListView();
 		}
 		private void UpdateListView()
 		{
-			_stockListView.Items = MarketSimulation.Active.GetAllCompanies().ToList().Cast<object>().ToList();
+			Company playerCompany = GameSettings.Instance.MyCompany;
+			IEnumerable<Company> companies = MarketSimulation.Active.GetAllCompanies();
+			companies = companies.Where(c => c != playerCompany);
+			_stockListView.Items = companies.Cast<object>().ToList();
 		}
 		private double GetAllDividends(Company company)
 		{
@@ -168,46 +150,6 @@ namespace Software_Inc_Stocks_Mod
 			{
 				return 0.0;
 			}
-		}
-		private void CreateTextDisplay()
-		{
-			if (_stockWindow == null || _stockWindow.MainPanel == null)
-			{
-				Debug.LogError("StocksUI: Window or MainPanel is null");
-				return;
-			}
-
-			GameObject textContainerGO = new GameObject("TextContainer", typeof(RectTransform));
-			textContainerGO.transform.SetParent(_stockWindow.MainPanel.transform, worldPositionStays: false);
-			
-			RectTransform containerRect = textContainerGO.GetComponent<RectTransform>();
-			containerRect.anchorMin = Vector2.zero;
-			containerRect.anchorMax = Vector2.one;
-			containerRect.offsetMin = new Vector2(10f, 10f);
-			containerRect.offsetMax = new Vector2(-10f, -10f);
-
-			Image containerBg = textContainerGO.AddComponent<Image>();
-			containerBg.color = new Color(0.1f, 0.1f, 0.15f, 0.8f);
-
-			GameObject textGO = new GameObject("RandomText", typeof(RectTransform));
-			textGO.transform.SetParent(textContainerGO.transform, worldPositionStays: false);
-
-			RectTransform textRect = textGO.GetComponent<RectTransform>();
-			textRect.anchorMin = Vector2.zero;
-			textRect.anchorMax = Vector2.one;
-			textRect.offsetMin = Vector2.zero;
-			textRect.offsetMax = Vector2.zero;
-
-			_displayText = textGO.AddComponent<Text>();
-			_displayText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-			_displayText.fontSize = 18;
-			_displayText.fontStyle = FontStyle.Bold;
-			_displayText.alignment = TextAnchor.MiddleCenter;
-			_displayText.color = Color.white;
-			_displayText.text = GetRandomText();
-
-			LayoutElement layoutElement = textGO.AddComponent<LayoutElement>();
-			layoutElement.preferredHeight = 100f;
 		}
 		private string GetRandomText()
 		{
