@@ -441,6 +441,7 @@ namespace Software_Inc_Stocks_Mod
 
 		public override void OnDeactivate()
 		{
+			SceneManager.sceneLoaded -= OnLoad;
 			RemoveConsoleCommands();
 			DestroyUI();
 			DebugConsoleLog("Deactivated");
