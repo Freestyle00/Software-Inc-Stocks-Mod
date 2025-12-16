@@ -11,13 +11,22 @@ namespace Software_Inc_Stocks_Mod
 {
 	public class StocksUI : MonoBehaviour
 	{
+		private List<List<float>> _chartValues;
+		private List<string> _companyNames;
+		private List<Color> _companyColors;
+		private List<bool> _companyVisible;
 		private GUIWindow _stockWindow;
 		private GUILineChart _stocksLineChart;
 		private GUIListView _stockListView;
 		private Text _displayText;
 		private System.Random _random;
 		private List<string> _randomTexts;
-		private const int SHARES_ALL = 2147483647;
+		private RectTransform _statsCanvas;
+		private Text _topCompanyLabel;
+		private Text _playerPnLLabel;
+		private Text _playerPortfolioLabel;
+		private Text _topDividendLabel;
+		private const float TEXT_DISTANCE = 30f;
 		private const float BUTTON_WIDTH = 50f;
 		private void Awake()
 		{
@@ -26,13 +35,18 @@ namespace Software_Inc_Stocks_Mod
 		private void Update()
 		{
 			//DevConsole.Console.Log("StocksPro: Window updated");
-			RefreshText();
+			if (_stockWindow != null)
+			{
+				UpdateListView();
+				UpdateStockChart();
+				UpdateStats();
+			}
 		}
 		public void InitStockPanel()
 		{
 			_stockWindow = WindowManager.SpawnWindow();
 			_stockWindow.InitialTitle = _stockWindow.TitleText.text = _stockWindow.NonLocTitle = Main._Name;
-			_stockWindow.MinSize.x = 600f;
+			_stockWindow.MinSize.x = 1200f;
 			_stockWindow.MinSize.y = 500f;
 			_stockWindow.name = "StockProInterface";
 			_stockWindow.MainPanel.name = "StockProMainPanel";
@@ -42,7 +56,8 @@ namespace Software_Inc_Stocks_Mod
 				closeButton.onClick.AddListener(() => _stockWindow.Close());
 			}
 			InitList();
-			InitGraph();
+			InitStockChart();
+			InitStats();
 			WindowManager.AddElementToWindow(
 				_stocksLineChart.gameObject,
 				_stockWindow,
@@ -56,31 +71,145 @@ namespace Software_Inc_Stocks_Mod
 				new Rect(0f, 0f, 0f, 0f),
 				new Rect(0f, 0.3f, 1f, 0.65f)
 			);
+			WindowManager.AddElementToWindow(
+				_statsCanvas.gameObject,
+				_stockWindow,
+				new Rect(0f, 0f, 0f, 0f),
+				new Rect(0.8f, 0f, 0.2f, 0.3f) // right 20%
+				);
 			_stockWindow.Show();
 		}
-		private void InitGraph()
+		public void InitStats()
 		{
-			GameObject chartGO = new GameObject("StocksLineChart");
+			if (_statsCanvas != null) return;
 
-			// Add RectTransform implicitly
-			RectTransform rt = chartGO.AddComponent<RectTransform>();
+			GameObject canvasGO = new GameObject("StatsCanvas");
+			_statsCanvas = canvasGO.AddComponent<RectTransform>();
+			var bg = canvasGO.AddComponent<UnityEngine.UI.Image>();
+			bg.color = new Color(0f, 0f, 0f, 0.5f);
 
-			_stocksLineChart = chartGO.AddComponent<GUILineChart>();
+			float yOffset = -10f;
 
-			// Graphic will auto-create CanvasRenderer internally
-			_stocksLineChart.material = Graphic.defaultGraphicMaterial;
-			_stocksLineChart.raycastTarget = true;
+			_topCompanyLabel = SpawnStatLabel(yOffset); yOffset -= TEXT_DISTANCE;
+			_playerPortfolioLabel = SpawnStatLabel(yOffset); yOffset -= TEXT_DISTANCE;
+			_playerPnLLabel = SpawnStatLabel(yOffset); yOffset -= TEXT_DISTANCE;
+			_topDividendLabel = SpawnStatLabel(yOffset); yOffset -= TEXT_DISTANCE;
 
-			_stocksLineChart.Colors = HUD.GetThemeColors().ToList();
+			UpdateStats();
+		}
+		private Text SpawnStatLabel(float yOffset)
+		{
+			Text label = WindowManager.SpawnLabel();
+			RectTransform rt = label.rectTransform;
+			rt.SetParent(_statsCanvas, false);
+			rt.anchorMin = new Vector2(0f, 1f);
+			rt.anchorMax = new Vector2(1f, 1f);
+			rt.pivot = new Vector2(0f, 1f);
+			rt.anchoredPosition = new Vector2(0f, yOffset);
+			rt.sizeDelta = new Vector2(0f, 25f); // fixed height
+			return label;
+		}
+		public void UpdateStats()
+		{
+			var playerCompany = GameSettings.Instance.MyCompany;
 
-			_stocksLineChart.Values = new List<List<float>>
-	{
-		new List<float> { 1f, 2f, 3f, 4f, 5f }
-	};
+			// Top company by dividends this month
+			Company topCompany = MarketSimulation.Active.GetAllCompanies()
+				.Where(c => c != playerCompany)
+				.OrderByDescending(c => GetAllDividends(c))
+				.FirstOrDefault();
 
-			_stocksLineChart.Cached = false;
+			if (topCompany != null)
+			{
+				_topCompanyLabel.text = $"Top Dividend Payout: {topCompany.Name}";
+			}
+			else
+			{
+				_topCompanyLabel.text = "Top Company: N/A";
+			}
 
-			_stocksLineChart.SetVerticesDirty();
+			// Player portfolio value
+
+			_playerPortfolioLabel.text = $"Portfolio Value: {GetPlayerPortfolioValue().Currency()}";
+
+			// Player total PnL
+			_playerPnLLabel.text = $"Total PnL: {playerCompany.NewOwnedStock.Sum(s => (s.ShareWorth - s.InitialWorth) * s.Shares).Currency()}";
+
+			// Player dividends received this month
+			_topDividendLabel.text = $"Dividends Received: {playerCompany.NewOwnedStock.Sum(s => s.Payout).Currency()}";
+		}
+		public void InitStockChart()
+		{
+			// Create the chart if it doesn't exist
+			if (_stocksLineChart == null)
+			{
+				_stocksLineChart = new GameObject("StocksLineChart").AddComponent<GUILineChart>();
+				_stocksLineChart.transform.SetParent(_stockWindow.MainPanel.transform, false);
+				_stocksLineChart.color = Color.black;
+				_stocksLineChart.Values = new List<List<float>>();
+				_stocksLineChart.Colors = new List<Color>();
+				_stocksLineChart.material = Graphic.defaultGraphicMaterial;
+				_stocksLineChart.raycastTarget = true;
+			}
+
+			// Prepare data structures
+			_chartValues = new List<List<float>>();
+			_companyNames = new List<string>();
+			_companyColors = HUD.GetThemeColors().ToList();
+			_companyVisible = new List<bool>();
+
+			var playerCompany = GameSettings.Instance.MyCompany;
+			var companies = MarketSimulation.Active.GetAllCompanies();
+
+			// Populate companies, skipping the player
+			foreach (var company in companies)
+			{
+				if (company == playerCompany)
+					continue;
+
+				_companyNames.Add(company.Name);
+				_companyVisible.Add(true);
+
+				// Use real "Balance" cashflow if available, else fallback
+				List<float> balanceValues;
+				if (company.Cashflow.ContainsKey("Balance"))
+					balanceValues = company.Cashflow["Balance"];
+				else
+					balanceValues = Enumerable.Repeat(0f, 12).ToList();
+
+				_chartValues.Add(balanceValues);
+			}
+
+			// Setup tooltip once
+			_stocksLineChart.ToolTipFunc = (lineIndex, pointIndex, value) =>
+			{
+				if (lineIndex < 0 || lineIndex >= _companyNames.Count)
+					return value.ToString("N2");
+
+				return _companyNames[lineIndex] + ": " + value.Currency();
+			};
+
+			// Initial update
+			UpdateStockChart();
+		}
+		public void UpdateStockChart()
+		{
+			if (_stocksLineChart == null)
+				return;
+
+			_stocksLineChart.Values.Clear();
+			_stocksLineChart.Colors.Clear();
+
+			for (int i = 0; i < _chartValues.Count; i++)
+			{
+				if (_companyVisible[i])
+				{
+					_stocksLineChart.Values.Add(_chartValues[i]);
+					_stocksLineChart.Colors.Add(_companyColors[i % _companyColors.Count]);
+				}
+			}
+
+			_stocksLineChart.UpdateCachedLines();
 		}
 		private void InitList()
 		{
@@ -188,6 +317,21 @@ namespace Software_Inc_Stocks_Mod
 			{
 				return 0.0;
 			}
+		}
+		private float GetPlayerPortfolioValue()
+		{
+			int portfolioValue = 0;
+			IEnumerable<Company> companies = MarketSimulation.Active.GetAllCompanies();
+			foreach (Company comp in companies)
+			{
+				NewStock share = GetPlayerShare(comp);
+				if (share != null)
+				{
+					
+					portfolioValue = portfolioValue + ((int)share.ShareWorth * (int)share.Shares);
+				}
+			}
+			return (float)portfolioValue;
 		}
 		private string GetRandomText()
 		{
