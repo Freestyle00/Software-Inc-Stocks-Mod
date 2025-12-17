@@ -338,13 +338,6 @@ namespace Software_Inc_Stocks_Mod
 
 			utils.DebugConsoleWrite("StocksUI fully deactivated");
 		}
-		/*private void OnDestroy()
-		{
-			if (_stockWindow != null)
-			{
-				_stockWindow.Close();
-			}
-		}*/
 	}
 	public class StocksButton
 	{

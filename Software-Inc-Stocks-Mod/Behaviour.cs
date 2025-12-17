@@ -174,7 +174,7 @@ namespace Software_Inc_Stocks_Mod
 				if (_stocksUI != null)
 				{
 					_stocksUI.Deactivate();
-					_stocksUI.enabled = false;  // <- stops Update() from running
+					_stocksUI.enabled = false; 
 					Destroy(_stocksUI.gameObject);
 					utils.DebugConsoleWrite("Stocks UI destroyed");
 				}
