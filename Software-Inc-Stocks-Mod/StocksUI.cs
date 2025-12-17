@@ -116,7 +116,7 @@ namespace Software_Inc_Stocks_Mod
 			// Top company by dividends this month
 			Company topCompany = MarketSimulation.Active.GetAllCompanies()
 				.Where(c => c != playerCompany)
-				.OrderByDescending(c => GetAllDividends(c))
+				.OrderByDescending(c => utils.GetAllDividends(c))
 				.FirstOrDefault();
 
 			if (topCompany != null)
@@ -130,7 +130,7 @@ namespace Software_Inc_Stocks_Mod
 
 			// Player portfolio value
 
-			_playerPortfolioLabel.text = $"Portfolio Value: {GetPlayerPortfolioValue().Currency()}";
+			_playerPortfolioLabel.text = $"Portfolio Value: {utils.GetPlayerPortfolioValue().Currency()}";
 
 			// Player total PnL
 			_playerPnLLabel.text = $"Total PnL: {playerCompany.NewOwnedStock.Sum(s => (s.ShareWorth - s.InitialWorth) * s.Shares).Currency()}";
@@ -205,6 +205,7 @@ namespace Software_Inc_Stocks_Mod
 				if (_companyVisible[i])
 				{
 					_stocksLineChart.Values.Add(_chartValues[i]);
+					_stocksLineChart.Values[i] = _stocksLineChart.Values[i].Skip(Math.Max(0, _stocksLineChart.Values[i].Count - 25)).Take(25).ToList();
 					_stocksLineChart.Colors.Add(_companyColors[i % _companyColors.Count]);
 				}
 			}
@@ -218,20 +219,20 @@ namespace Software_Inc_Stocks_Mod
 			GUIListView.ColumnDef companyNameColumn = new ColumnDefinition<Company>(header: "Company", label: x => x.Name, vola: false, width: 200f);
 			GUIListView.ColumnDef companyWorthColumn = new ColumnDefinition<Company>(header: "Worth", label: x => x.GetMoneyWithInsurance(), vola: true, width: 100f);
 			GUIListView.ColumnDef companySharesColumn = new ColumnDefinition<Company>(header: "Shares", label: x => x.Shares, vola: false, width: 100f);
-			GUIListView.ColumnDef companyDividendsColumn = new ColumnDefinition<Company>(header: "All Dividends", label: x => GetAllDividends(x), vola: true, width: 100f);
-			GUIListView.ColumnDef companyPlayerDividendsColumn = new ColumnDefinition<Company>(header: "Your Dividends", label: x => GetPlayerDividends(x), vola: true, width: 100f);
+			GUIListView.ColumnDef companyDividendsColumn = new ColumnDefinition<Company>(header: "All Dividends", label: x => utils.GetAllDividends(x), vola: true, width: 100f);
+			GUIListView.ColumnDef companyPlayerDividendsColumn = new ColumnDefinition<Company>(header: "Your Dividends", label: x => utils.GetPlayerDividends(x), vola: true, width: 120f);
 			GUIListView.ColumnDef companySharePriceColumn = new ColumnDefinition<Company>(header: "Shareworth", label: x => x.GetShareWorth(), vola: true, width: 100f);
-			GUIListView.ColumnDef companyYourSharesColumn = new ColumnDefinition<Company>(header: "Your Shares", label: x => GetPlayerShares(x), vola: true, width: 100f);
-			GUIListView.ColumnDef companyPNL = new ColumnDefinition<Company>(header: "Your PnL", label: x => GetPlayerPNL(x), vola: true, width: 100f);
+			GUIListView.ColumnDef companyYourSharesColumn = new ColumnDefinition<Company>(header: "Your Shares", label: x => utils.GetPlayerShares(x), vola: true, width: 100f);
+			GUIListView.ColumnDef companyPNL = new ColumnDefinition<Company>(header: "Your PnL", label: x => utils.GetPlayerPNL(x), vola: true, width: 100f);
 
-			GUIListView.ColumnDef buyAll       = new ColumnDefinition<Company>("+ALL",  company => { ConsoleStocksOps("b", company.ID, company.Shares); }, BUTTON_WIDTH);
-			GUIListView.ColumnDef buyThousand  = new ColumnDefinition<Company>("+1000", company => { ConsoleStocksOps("b", company.ID, 1000);           }, BUTTON_WIDTH);
-			GUIListView.ColumnDef buyHundred   = new ColumnDefinition<Company>("+100",  company => { ConsoleStocksOps("b", company.ID, 100);            }, BUTTON_WIDTH);
-			GUIListView.ColumnDef buyTen       = new ColumnDefinition<Company>("+10",   company => { ConsoleStocksOps("b", company.ID, 10);             }, BUTTON_WIDTH);
-			GUIListView.ColumnDef sellTen      = new ColumnDefinition<Company>("+10",   company => { ConsoleStocksOps("s", company.ID, 10);             }, BUTTON_WIDTH);
-			GUIListView.ColumnDef sellHundred  = new ColumnDefinition<Company>("+100",  company => { ConsoleStocksOps("s", company.ID, 100);            }, BUTTON_WIDTH);
-			GUIListView.ColumnDef sellThousand = new ColumnDefinition<Company>("+1000", company => { ConsoleStocksOps("s", company.ID, 1000);           }, BUTTON_WIDTH);
-			GUIListView.ColumnDef sellAll      = new ColumnDefinition<Company>("-ALL",  company => { ConsoleStocksOps("s", company.ID, company.Shares); }, BUTTON_WIDTH);
+			GUIListView.ColumnDef buyAll       = new ColumnDefinition<Company>("bALL",  company => { utils.ConsoleStocksOps("b", company.ID, company.Shares); }, BUTTON_WIDTH);
+			GUIListView.ColumnDef buyThousand  = new ColumnDefinition<Company>("b1000", company => { utils.ConsoleStocksOps("b", company.ID, 1000);           }, BUTTON_WIDTH);
+			GUIListView.ColumnDef buyHundred   = new ColumnDefinition<Company>("b100",  company => { utils.ConsoleStocksOps("b", company.ID, 100);            }, BUTTON_WIDTH);
+			GUIListView.ColumnDef buyTen       = new ColumnDefinition<Company>("b10",   company => { utils.ConsoleStocksOps("b", company.ID, 10);             }, BUTTON_WIDTH);
+			GUIListView.ColumnDef sellTen      = new ColumnDefinition<Company>("s10",   company => { utils.ConsoleStocksOps("s", company.ID, 10);             }, BUTTON_WIDTH);
+			GUIListView.ColumnDef sellHundred  = new ColumnDefinition<Company>("s100",  company => { utils.ConsoleStocksOps("s", company.ID, 100);            }, BUTTON_WIDTH);
+			GUIListView.ColumnDef sellThousand = new ColumnDefinition<Company>("s1000", company => { utils.ConsoleStocksOps("s", company.ID, 1000);           }, BUTTON_WIDTH);
+			GUIListView.ColumnDef sellAll      = new ColumnDefinition<Company>("sALL",  company => { utils.ConsoleStocksOps("s", company.ID, company.Shares); }, BUTTON_WIDTH);
 
 			_stockListView = WindowManager.SpawnList();
 			_stockListView.AddColumn(companyLogo);
@@ -260,93 +261,6 @@ namespace Software_Inc_Stocks_Mod
 			IEnumerable<Company> companies = MarketSimulation.Active.GetAllCompanies();
 			companies = companies.Where(c => c != playerCompany);
 			_stockListView.Items = companies.Cast<object>().ToList();
-		}
-		private double GetAllDividends(Company company)
-		{
-			double totalDividends = 0.0;
-			foreach (NewStock stock in company.NewStock)
-			{
-				totalDividends += stock.Payout;
-			}
-			return totalDividends;
-		}
-		private double GetPlayerDividends(Company company)
-		{
-			NewStock playerStock = GetPlayerShare(company);
-			if (playerStock != null)
-			{
-				return playerStock.Payout;
-			}
-			else
-			{
-				return 0.0;
-			}
-		}
-		private int GetPlayerShares(Company company)
-		{
-			NewStock playerStock = GetPlayerShare(company);
-			if (playerStock != null)
-			{
-				return (int)playerStock.Shares;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		private NewStock GetPlayerShare(Company company)
-		{
-			NewStock playerStock = null;
-			foreach (NewStock stock in company.NewStock)
-			{
-				if (stock.Buyer == GameSettings.Instance.MyCompany)
-				{
-					playerStock = stock;
-				}
-			}
-			return playerStock;
-		}
-		private double GetPlayerPNL(Company company)
-		{
-			NewStock playerStock = GetPlayerShare(company);
-			if (playerStock != null)
-			{
-				return (playerStock.ShareWorth - playerStock.InitialWorth) * playerStock.Shares;
-			}
-			else
-			{
-				return 0.0;
-			}
-		}
-		private float GetPlayerPortfolioValue()
-		{
-			int portfolioValue = 0;
-			IEnumerable<Company> companies = MarketSimulation.Active.GetAllCompanies();
-			foreach (Company comp in companies)
-			{
-				NewStock share = GetPlayerShare(comp);
-				if (share != null)
-				{
-					
-					portfolioValue = portfolioValue + ((int)share.ShareWorth * (int)share.Shares);
-				}
-			}
-			return (float)portfolioValue;
-		}
-		private string GetRandomText()
-		{
-			if (_randomTexts == null || _randomTexts.Count == 0)
-				return "No text available.";
-
-			int index = _random.Next(_randomTexts.Count);
-			return _randomTexts[index];
-		}
-		public void RefreshText()
-		{
-			if (_displayText != null)
-			{
-				_displayText.text = GetRandomText();
-			}
 		}
 		public void Show()
 		{
@@ -387,256 +301,6 @@ namespace Software_Inc_Stocks_Mod
 			{
 				_stockWindow.Close();
 			}
-		}
-		public void ConsoleStocksOps(string buySell, uint companyId, uint shares)
-		{
-			if (shares == 0)
-			{
-				ConsoleWrite("Argument error: 'shares' must be at least 1.");
-				return;
-			}
-
-			Company seller = GetCompanyById(companyId);
-			if (seller == null)
-			{
-				ConsoleWrite($"Company with ID {companyId} not found or simulation unavailable.");
-				return;
-			}
-
-			Company buyer = GameSettings.Instance?.MyCompany;
-			if (buyer == null)
-			{
-				ConsoleWrite("Player company (GameSettings.Instance.MyCompany) not available.");
-				return;
-			}
-
-			NewStock existing;
-			if (buySell.ToLower() == "buy" || buySell.ToLower() == "b")
-			{
-				existing = FindMarketLot(seller, shares, false);
-			}
-			else if (buySell.ToLower() == "sell" || buySell.ToLower() == "s")
-			{
-				existing = FindMarketLot(seller, shares, true);
-			}
-			else
-			{
-				ConsoleWrite("Argument error: first argument must be 'buy' or 'sell'.");
-				return;
-			}
-
-			if (existing != null)
-			{
-				double pricePerShare = existing.ShareWorth;
-				double totalPrice = pricePerShare * shares;
-				ConsoleWrite($"Found market lot: Seller '{seller.Name}' Buyer '{existing.BuyerName}' LotShares={existing.Shares}. Buying {shares} @ {pricePerShare:0.00} -> total {totalPrice:0.00}");
-				UseStockButtonForPurchase(existing, shares);
-			}
-			else
-			{
-				ConsoleWrite("Purchase failed. Possible reasons: insufficient funds or trade rejected by game logic.");
-			}
-		}
-		public NewStock FindMarketLot(Company seller, uint desiredShares, bool findPlayerLot)
-		{
-			if (seller == null) return null;
-
-			if (!findPlayerLot)
-			{
-				try
-				{
-					if (seller.NewStock == null || seller.NewStock.Count == 0) return null;
-
-					ConsoleWrite("Searching market lots");
-					NewStock found = seller.NewStock
-						.OrderByDescending(n => n.Shares)
-						.FirstOrDefault(n => n.Shares >= desiredShares);
-
-					if (found == null)
-					{
-						ConsoleWrite("No lot with sufficient shares found, picking largest available lot.");
-						found = seller.NewStock.OrderByDescending(n => n.Shares).FirstOrDefault();
-					}
-
-					foreach (NewStock stock in GameSettings.Instance.MyCompany.NewOwnedStock)
-					{
-						if (found == stock)
-						{
-							ConsoleWrite("FindMarketLot: Skipping own stock lot.");
-							found = seller.NewStock.Where(n => n != stock).OrderByDescending(n => n.Shares).Last();
-							if (found == stock)
-							{
-								ConsoleWrite("FindMarketLot: No valid market lot found (all owned by player).");
-								return null;
-							}
-						}
-					}
-
-					return found;
-				}
-				catch (Exception ex)
-				{
-					ConsoleWrite("FindMarketLot error: " + ex.ToString());
-					return null;
-				}
-			}
-			else
-			{
-				foreach (NewStock stock in seller.NewStock)
-				{
-					if (stock.Buyer == GameSettings.Instance.MyCompany)
-					{
-						ConsoleWrite("FindMarketLot: Found player-owned lot.");
-						return stock;
-					}
-				}
-				ConsoleWrite("FindMarketLot: No player-owned lot found.");
-				return null;
-			}
-		}
-		public void UseStockButtonForPurchase(NewStock stock, uint shares)
-		{
-			if (stock == null)
-			{
-				ConsoleWrite("UseStockButtonForPurchase: stock is null.");
-				return;
-			}
-
-			if (GameSettings.Instance == null)
-			{
-				ConsoleWrite("Game not ready for UI-based purchase.");
-				return;
-			}
-
-			GameObject root = null;
-			try
-			{
-				root = new GameObject("TempStockButtonInvoker");
-				root.hideFlags = HideFlags.HideAndDontSave;
-
-				StockButton sb = root.AddComponent<StockButton>();
-				Font arial = UnityEngine.Resources.GetBuiltinResource<UnityEngine.Font>("Arial.ttf");
-
-				// CompanyText
-				var companyGO = new GameObject("TempCompanyText");
-				companyGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var companyText = companyGO.AddComponent<UnityEngine.UI.Text>();
-				companyText.font = arial;
-				companyText.fontSize = 14;
-				sb.CompanyText = companyText;
-
-				// SliderText
-				var sliderTextGO = new GameObject("TempSliderText");
-				sliderTextGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var sliderText = sliderTextGO.AddComponent<UnityEngine.UI.Text>();
-				sliderText.font = arial;
-				sliderText.fontSize = 12;
-				sb.SliderText = sliderText;
-
-				// StockSlider
-				var sliderGO = new GameObject("TempSlider");
-				sliderGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var slider = sliderGO.AddComponent<UnityEngine.UI.Slider>();
-				slider.minValue = 0f;
-				slider.maxValue = Math.Max(1f, (float)stock.Shares);
-				slider.value = Mathf.Clamp((float)shares, slider.minValue, slider.maxValue);
-				sb.StockSlider = slider;
-
-				// ButtonText
-				var btnTextGO = new GameObject("TempButtonText");
-				btnTextGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var btnText = btnTextGO.AddComponent<UnityEngine.UI.Text>();
-				btnText.font = arial;
-				btnText.fontSize = 14;
-				sb.ButtonText = btnText;
-
-				// ChangeText
-				var changeGO = new GameObject("TempChangeText");
-				changeGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var changeText = changeGO.AddComponent<UnityEngine.UI.Text>();
-				changeText.font = arial;
-				changeText.fontSize = 12;
-				sb.ChangeText = changeText;
-
-				// PayoutText
-				var payoutGO = new GameObject("TempPayoutText");
-				payoutGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var payoutText = payoutGO.AddComponent<UnityEngine.UI.Text>();
-				payoutText.font = arial;
-				payoutText.fontSize = 12;
-				sb.PayoutText = payoutText;
-
-				// Logo
-				var logoGO = new GameObject("TempLogo");
-				logoGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var raw = logoGO.AddComponent<UnityEngine.UI.RawImage>();
-				sb.Logo = raw;
-
-				// ButtonImage
-				var btnImageGO = new GameObject("TempButtonImage");
-				btnImageGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var btnImage = btnImageGO.AddComponent<UnityEngine.UI.Image>();
-				sb.ButtonImage = btnImage;
-
-				// ActionButton
-				var actionBtnGO = new GameObject("TempActionButton");
-				actionBtnGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var actionBtnImage = actionBtnGO.AddComponent<UnityEngine.UI.Image>();
-				var actionBtn = actionBtnGO.AddComponent<UnityEngine.UI.Button>();
-				actionBtn.targetGraphic = actionBtnImage;
-				sb.ActionButton = actionBtn;
-
-				// CustomAmount
-				var customGO = new GameObject("TempCustomAmount");
-				customGO.transform.SetParent(root.transform, worldPositionStays: false);
-				var textForInput = customGO.AddComponent<UnityEngine.UI.Text>();
-				textForInput.font = arial;
-				textForInput.fontSize = 12;
-				var input = customGO.AddComponent<UnityEngine.UI.InputField>();
-				input.textComponent = textForInput;
-				sb.CustomAmount = input;
-
-				sb.Init(stock);
-
-				if (sb.StockSlider != null)
-				{
-					sb.StockSlider.maxValue = Math.Max(1f, stock.Shares);
-					sb.StockSlider.minValue = 0f;
-					sb.StockSlider.value = Mathf.Clamp((float)shares, sb.StockSlider.minValue, sb.StockSlider.maxValue);
-				}
-
-				sb.Action();
-			}
-			catch (Exception ex)
-			{
-				ConsoleWrite("Exception using StockButton UI path: " + ex.Message);
-				ConsoleWrite(ex.ToString());
-			}
-			finally
-			{
-				if (root != null)
-				{
-					try
-					{
-						UnityEngine.Object.DestroyImmediate(root);
-					}
-					catch { }
-				}
-			}
-		}
-		public void ConsoleWrite(string msg)
-		{
-			DevConsole.Console.Log($"{Main._Name}: {msg}");
-		}
-		public Company GetCompanyById(uint companyId)
-		{
-			if (GameSettings.Instance == null || GameSettings.Instance.simulation == null)
-			{
-				ConsoleWrite("GetCompanyById: GameSettings or simulation not available.");
-				return null;
-			}
-
-			return GameSettings.Instance.simulation.GetCompany(companyId);
 		}
 	}
 	public class StocksButton

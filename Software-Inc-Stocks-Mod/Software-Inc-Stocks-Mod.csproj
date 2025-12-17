@@ -69,6 +69,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="StocksUI.cs" />
+    <Compile Include="utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -76,9 +77,12 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="UI.tyd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>xcopy /y  "$(ProjectDir)\*.cs" "I:\SteamLibrary\steamapps\common\Software Inc\DLLMods\StocksPro"</PreBuildEvent>
+    <PreBuildEvent>xcopy /y  "$(ProjectDir)\*.cs" "I:\SteamLibrary\steamapps\common\Software Inc\DLLMods\StocksPro"
+
+xcopy /y  "$(ProjectDir)\*.tyd" "I:\SteamLibrary\steamapps\common\Software Inc\DLLMods\StocksPro\Localization\English"</PreBuildEvent>
   </PropertyGroup>
 </Project>

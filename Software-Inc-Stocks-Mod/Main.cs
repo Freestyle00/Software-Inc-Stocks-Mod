@@ -18,7 +18,6 @@ namespace Software_Inc_Stocks_Mod
 
 			_StocksProBehaviour = parentMod.Behaviors.OfType<StocksProBehaviour>().First();
 		}
-
 		public override void ConstructOptionsScreen(RectTransform parent, bool inGame)
 		{
 			//Start by spawning a label
@@ -30,8 +29,8 @@ namespace Software_Inc_Stocks_Mod
 			//Option to enable and disable Debug messages
 			var DebugCheckbox = WindowManager.SpawnCheckbox();
 			//sets the checkbox to off
-			//DebugCheckbox.isOn = false; 
-			DebugCheckbox.onValueChanged.AddListener(x => _StocksProBehaviour.DebugChange(x));
+			DebugCheckbox.isOn = false; 
+			DebugCheckbox.onValueChanged.AddListener(x => utils.DebugChange(x));
 			DebugCheckbox.GetComponentInChildren<UnityEngine.UI.Text>().text = "Debug";
 			WindowManager.AddElementToElement(DebugCheckbox.gameObject, parent.gameObject, new Rect(0, 50, 100, 100), new Rect(0, 0, 0, 0));
 		}
