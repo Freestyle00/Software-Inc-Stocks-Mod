@@ -17,12 +17,38 @@ namespace Software_Inc_Stocks_Mod
 		public static bool Loaded = false;
 		private StocksUI _stocksUI;
 
+		public override void OnActivate()
+		{
+			utils.DebugConsoleWrite("Activated");
+			DebugConsoleCommands();
+			SceneManager.sceneLoaded += OnLoad;
+			if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToString() == "MainScene")
+			{
+				InitUI();
+			}
+		}
+		public override void OnDeactivate()
+		{
+			SceneManager.sceneLoaded -= OnLoad;
+			RemoveConsoleCommands();
+			DestroyUI();
+			utils.DebugConsoleWrite("Deactivated");
+		}
+		public void Start()
+		{
+			/*utils.DebugConsoleWrite("Start called");
+			SceneManager.sceneLoaded += OnLoad;
+			if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToString() == "MainScene")
+			{
+				InitUI();
+			}*/
+		}
 		public void DebugConsoleCommands()
 		{
 			DevConsole.Console.AddCommand(new Command("getstocks", utils.ConsoleGetStocks, "List stocks owned by the player company (verbose)"));
 			DevConsole.Console.AddCommand(new Command("dumpmarket", utils.ConsoleDumpMarket, "List all market companies with id, shares and current price"));
 			DevConsole.Console.AddCommand(new Command<string, uint, uint>("stocks", utils.ConsoleStocksOps, "(B)uy or (S)ell <shares> of company with <companyId> immediately (verbose)"));
-			DevConsole.Console.AddCommand(new Command("quit", ConsoleQuit, "Quit the game"));
+			DevConsole.Console.AddCommand(new Command("quit", utils.ConsoleQuit, "Quit the game"));
 		}
 		public void RemoveConsoleCommands()
 		{
@@ -30,20 +56,6 @@ namespace Software_Inc_Stocks_Mod
 			DevConsole.Console.RemoveCommand("dumpmarket");
 			DevConsole.Console.RemoveCommand("stocks");
 			DevConsole.Console.RemoveCommand("quit");
-		}
-		public void ConsoleQuit()
-		{
-			Application.Quit();
-		}
-		public override void OnActivate()
-		{
-			utils.DebugConsoleWrite("Activated");
-			DebugConsoleCommands();
-		}
-		void Start()
-		{
-			utils.DebugConsoleWrite("Start called");
-			SceneManager.sceneLoaded += OnLoad;
 		}
 		private void OnLoad(Scene scene, LoadSceneMode mode)
 		{
@@ -80,15 +92,17 @@ namespace Software_Inc_Stocks_Mod
 		}
 		private void DestroyUI()
 		{
-			Destroy(_stocksUI);
-			Destroy(StockButton);
-		}
-		public override void OnDeactivate()
-		{
-			SceneManager.sceneLoaded -= OnLoad;
-			RemoveConsoleCommands();
-			DestroyUI();
-			utils.DebugConsoleWrite("Deactivated");
+			if (_stocksUI != null)
+			{
+				Destroy(_stocksUI.gameObject);
+				Destroy(_stocksUI);
+				_stocksUI = null;
+			}
+			if (StockButton != null)
+			{
+				Destroy(StockButton.gameObject);
+				StockButton = null;
+			}
 		}
 	}
 }

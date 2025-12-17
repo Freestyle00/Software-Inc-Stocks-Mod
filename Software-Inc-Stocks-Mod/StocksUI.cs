@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -327,6 +328,10 @@ namespace Software_Inc_Stocks_Mod
 				new Rect(0f, 0f, 0f, 0f));
 
 			return button;
+
+			
 		}
+
+
 	}
 }

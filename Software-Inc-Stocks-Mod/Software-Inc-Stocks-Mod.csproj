@@ -73,16 +73,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Localization\German\UI.tyd" />
+    <None Include="Localization\Norwegian\UI.tyd" />
+    <None Include="Localization\Russian\UI.tyd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="UI.tyd" />
+    <None Include="Localization\English\UI.tyd" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>xcopy /y  "$(ProjectDir)\*.cs" "I:\SteamLibrary\steamapps\common\Software Inc\DLLMods\StocksPro"
 
-xcopy /y  "$(ProjectDir)\*.tyd" "I:\SteamLibrary\steamapps\common\Software Inc\DLLMods\StocksPro\Localization\English"</PreBuildEvent>
+robocopy "$(ProjectDir)\Localization" "I:\SteamLibrary\steamapps\common\Software Inc\DLLMods\StocksPro\Localization" *.tyd /S /XO /R:0 /W:0
+</PreBuildEvent>
   </PropertyGroup>
 </Project>

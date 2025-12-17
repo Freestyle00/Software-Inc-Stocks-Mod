@@ -1,0 +1,20 @@
+#Columns
+    AllDividends "Ausgeschüttete Dividenden"
+    YourDividends "Deine Dividenden"
+    Shareworth "Anteilwert"
+    YourShares "Deine Anteile"
+    YourPnL "Dein GuV"
+
+bALL "+Alle"
+b1000 "+1000"
+b100 "+100"
+b10 "+10"
+s10 "-10"
+s100 "-100"
+s1000 "-1000"
+sALL "-Alle"
+
+TopDividendLabel "Heutiger Gewinner"
+PlayerPortfolioLabel "Portfoliowert"
+PlayerPnLLabel "Dein GuV"
+TopDividendReceivedLabel "Erhaltene Dividenden"

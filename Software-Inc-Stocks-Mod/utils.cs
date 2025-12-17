@@ -29,6 +29,10 @@ namespace Software_Inc_Stocks_Mod
 			DebugConsoleWrite($"Got list of Stocks from {company.Name}");
 			return company.NewOwnedStock;
 		}
+		public static void ConsoleQuit()
+		{
+			Application.Quit();
+		}
 		public static void ConsoleGetStocks()
 		{
 			Company player = GameSettings.Instance?.MyCompany;

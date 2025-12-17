@@ -1,0 +1,20 @@
+﻿#Columns
+    AllDividends "Все дивиденды"
+    YourDividends "Ваши дивиденды"
+    Shareworth "Стоимость доли"
+    YourShares "Ваши доли"
+    YourPnL "Ваш P&L"
+
+bALL "+Все"
+b1000 "+1000"
+b100 "+100"
+b10 "+10"
+s10 "-10"
+s100 "-100"
+s1000 "-1000"
+sALL "-Все"
+
+TopDividendLabel "Максимальная дивидендная выплата"
+PlayerPortfolioLabel "Стоимость портфеля"
+PlayerPnLLabel "Общий P&L"
+TopDividendReceivedLabel "Полученные дивиденды"
