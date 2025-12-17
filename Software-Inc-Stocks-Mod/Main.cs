@@ -9,7 +9,7 @@ namespace Software_Inc_Stocks_Mod
 	{
 		private StocksProBehaviour _StocksProBehaviour;
 
-		public static string _Name = "StocksPro";
+		public static string _Name = "Stocks".Loc() + " Pro";
 		public override string Name => _Name;
 
 		public override void Initialize(ModController.DLLMod parentMod)
@@ -28,7 +28,6 @@ namespace Software_Inc_Stocks_Mod
 				new Rect(0, 0, 0, 0));
 			//Option to enable and disable Debug messages
 			var DebugCheckbox = WindowManager.SpawnCheckbox();
-			//sets the checkbox to off
 			DebugCheckbox.isOn = false; 
 			DebugCheckbox.onValueChanged.AddListener(x => utils.DebugChange(x));
 			DebugCheckbox.GetComponentInChildren<UnityEngine.UI.Text>().text = "Debug";

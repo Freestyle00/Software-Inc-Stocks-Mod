@@ -76,7 +76,7 @@ namespace Software_Inc_Stocks_Mod
 				_statsCanvas.gameObject,
 				_stockWindow,
 				new Rect(0f, 0f, 0f, 0f),
-				new Rect(0.8f, 0f, 0.2f, 0.3f) // right 20%
+				new Rect(0.8f, 0f, 0.2f, 0.3f) 
 				);
 			_stockWindow.Show();
 		}
@@ -107,14 +107,13 @@ namespace Software_Inc_Stocks_Mod
 			rt.anchorMax = new Vector2(1f, 1f);
 			rt.pivot = new Vector2(0f, 1f);
 			rt.anchoredPosition = new Vector2(0f, yOffset);
-			rt.sizeDelta = new Vector2(0f, 25f); // fixed height
+			rt.sizeDelta = new Vector2(0f, 25f); 
 			return label;
 		}
 		public void UpdateStats()
 		{
 			var playerCompany = GameSettings.Instance.MyCompany;
 
-			// Top company by dividends this month
 			Company topCompany = MarketSimulation.Active.GetAllCompanies()
 				.Where(c => c != playerCompany)
 				.OrderByDescending(c => utils.GetAllDividends(c))
@@ -122,26 +121,22 @@ namespace Software_Inc_Stocks_Mod
 
 			if (topCompany != null)
 			{
-				_topCompanyLabel.text = $"Top Dividend Payout: {topCompany.Name}";
+				_topCompanyLabel.text = "TopDividendLabel".Loc() + $": {topCompany.Name}";
 			}
 			else
 			{
-				_topCompanyLabel.text = "Top Company: N/A";
+				_topCompanyLabel.text = "TopDividendLabel".Loc() + ": N/A";
 			}
 
-			// Player portfolio value
 
-			_playerPortfolioLabel.text = $"Portfolio Value: {utils.GetPlayerPortfolioValue().Currency()}";
+			_playerPortfolioLabel.text = "PlayerPortfolioLabel".Loc() + $": {utils.GetPlayerPortfolioValue().Currency()}";
 
-			// Player total PnL
-			_playerPnLLabel.text = $"Total PnL: {playerCompany.NewOwnedStock.Sum(s => (s.ShareWorth - s.InitialWorth) * s.Shares).Currency()}";
+			_playerPnLLabel.text = "PlayerPnLLabel".Loc() + $": {playerCompany.NewOwnedStock.Sum(s => (s.ShareWorth - s.InitialWorth) * s.Shares).Currency()}";
 
-			// Player dividends received this month
-			_topDividendLabel.text = $"Dividends Received: {playerCompany.NewOwnedStock.Sum(s => s.Payout).Currency()}";
+			_topDividendLabel.text = "TopDividendReceivedLabel".Loc() +$": {playerCompany.NewOwnedStock.Sum(s => s.Payout).Currency()}";
 		}
 		public void InitStockChart()
 		{
-			// Create the chart if it doesn't exist
 			if (_stocksLineChart == null)
 			{
 				_stocksLineChart = new GameObject("StocksLineChart").AddComponent<GUILineChart>();
@@ -153,7 +148,6 @@ namespace Software_Inc_Stocks_Mod
 				_stocksLineChart.raycastTarget = true;
 			}
 
-			// Prepare data structures
 			_chartValues = new List<List<float>>();
 			_companyNames = new List<string>();
 			_companyColors = HUD.GetThemeColors().ToList();
@@ -162,7 +156,6 @@ namespace Software_Inc_Stocks_Mod
 			var playerCompany = GameSettings.Instance.MyCompany;
 			var companies = MarketSimulation.Active.GetAllCompanies();
 
-			// Populate companies, skipping the player
 			foreach (var company in companies)
 			{
 				if (company == playerCompany)
@@ -171,7 +164,6 @@ namespace Software_Inc_Stocks_Mod
 				_companyNames.Add(company.Name);
 				_companyVisible.Add(true);
 
-				// Use real "Balance" cashflow if available, else fallback
 				List<float> balanceValues;
 				if (company.Cashflow.ContainsKey("Balance"))
 					balanceValues = company.Cashflow["Balance"];
@@ -181,7 +173,6 @@ namespace Software_Inc_Stocks_Mod
 				_chartValues.Add(balanceValues);
 			}
 
-			// Setup tooltip once
 			_stocksLineChart.ToolTipFunc = (lineIndex, pointIndex, value) =>
 			{
 				if (lineIndex < 0 || lineIndex >= _companyNames.Count)
@@ -190,7 +181,6 @@ namespace Software_Inc_Stocks_Mod
 				return _companyNames[lineIndex] + ": " + value.Currency();
 			};
 
-			// Initial update
 			UpdateStockChart();
 		}
 		public void UpdateStockChart()
@@ -312,7 +302,7 @@ namespace Software_Inc_Stocks_Mod
 		public static Button stocksButton(UnityAction toggle = null)
 		{
 			Button button = WindowManager.SpawnButton();
-			button.GetComponentInChildren<Text>().text = "Stocks";
+			button.GetComponentInChildren<Text>().text = "Stocks".Loc();
 			
 			if (toggle != null)
 			{

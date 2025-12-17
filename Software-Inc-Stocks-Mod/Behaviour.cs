@@ -80,7 +80,6 @@ namespace Software_Inc_Stocks_Mod
 		{
 			utils.DebugConsoleWrite("InitUI called");
 
-			// Only create the Stocks UI if it doesn't exist
 			if (_stocksUI == null)
 			{
 				GameObject stocksUIGO = new GameObject("StocksUI", typeof(StocksUI));
@@ -89,7 +88,6 @@ namespace Software_Inc_Stocks_Mod
 				utils.DebugConsoleWrite("Stocks UI created");
 			}
 
-			// Always create or update the button
 			if (StockButton == null)
 			{
 				StockButton = StocksButton.stocksButton(() => _stocksUI.Toggle());
@@ -97,7 +95,6 @@ namespace Software_Inc_Stocks_Mod
 			}
 			else
 			{
-				// Update callback if button already exists
 				StockButton.onClick.RemoveAllListeners();
 				StockButton.onClick.AddListener(() => _stocksUI.Toggle());
 				utils.DebugConsoleWrite("Stocks button callback updated");
@@ -110,8 +107,6 @@ namespace Software_Inc_Stocks_Mod
 				UnityEngine.Object.Destroy(_stocksUI.gameObject);
 				_stocksUI = null;
 			}
-
-			// Destroy the button
 			if (StockButton != null)
 			{
 				UnityEngine.Object.Destroy(StockButton.gameObject);
