@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,20 +28,28 @@ namespace Software_Inc_Stocks_Mod
 		private Text _topDividendLabel;
 		private const float TEXT_DISTANCE = 30f;
 		private const float BUTTON_WIDTH = 50f;
+		public bool IsDestroyed = true;
 		private void Awake()
 		{
 
 		}
 		private void Update()
 		{
-			//DevConsole.Console.Log("StocksPro: Window updated");
-			if (_stockWindow != null)
+			try
 			{
+				if (!this.enabled || IsDestroyed || _stockWindow == null || _stocksLineChart == null || _stockListView == null)
+					return;
+
 				UpdateListView();
 				UpdateStockChart();
 				UpdateStats();
 			}
+			catch (Exception ex)
+			{
+				utils.DebugConsoleWrite("StocksUI.Update exception: " + ex);
+			}
 		}
+
 		public void InitStockPanel()
 		{
 			_stockWindow = WindowManager.SpawnWindow();
@@ -112,6 +119,9 @@ namespace Software_Inc_Stocks_Mod
 		}
 		public void UpdateStats()
 		{
+			try
+			{
+
 			var playerCompany = GameSettings.Instance.MyCompany;
 
 			Company topCompany = MarketSimulation.Active.GetAllCompanies()
@@ -134,6 +144,10 @@ namespace Software_Inc_Stocks_Mod
 			_playerPnLLabel.text = "PlayerPnLLabel".Loc() + $": {playerCompany.NewOwnedStock.Sum(s => (s.ShareWorth - s.InitialWorth) * s.Shares).Currency()}";
 
 			_topDividendLabel.text = "TopDividendReceivedLabel".Loc() +$": {playerCompany.NewOwnedStock.Sum(s => s.Payout).Currency()}";
+			} catch(Exception ex)
+			{
+				utils.DebugConsoleWrite($"UpdateStas Exception {ex}");
+			}
 		}
 		public void InitStockChart()
 		{
@@ -248,10 +262,18 @@ namespace Software_Inc_Stocks_Mod
 		}
 		private void UpdateListView()
 		{
-			Company playerCompany = GameSettings.Instance.MyCompany;
-			IEnumerable<Company> companies = MarketSimulation.Active.GetAllCompanies();
-			companies = companies.Where(c => c != playerCompany);
-			_stockListView.Items = companies.Cast<object>().ToList();
+			try
+			{
+
+					Company playerCompany = GameSettings.Instance.MyCompany;
+					IEnumerable<Company> companies = MarketSimulation.Active.GetAllCompanies();
+					companies = companies.Where(c => c != playerCompany);
+					_stockListView.Items = companies.Cast<object>().ToList();
+			}
+			catch(Exception ex)
+			{
+				utils.DebugConsoleWrite($"UpdateListView Excpetion {ex}");
+			}
 		}
 		public void Show()
 		{
@@ -286,13 +308,43 @@ namespace Software_Inc_Stocks_Mod
 				Show();
 			}
 		}
-		private void OnDestroy()
+		public void Deactivate()
+		{
+			IsDestroyed = true;
+
+			if (_stockWindow != null)
+			{
+				_stockWindow.Close();
+				_stockWindow = null;
+			}
+
+			if (_stocksLineChart != null)
+			{
+				Destroy(_stocksLineChart.gameObject);
+				_stocksLineChart = null;
+			}
+
+			if (_stockListView != null)
+			{
+				Destroy(_stockListView.gameObject);
+				_stockListView = null;
+			}
+
+			if (_statsCanvas != null)
+			{
+				Destroy(_statsCanvas.gameObject);
+				_statsCanvas = null;
+			}
+
+			utils.DebugConsoleWrite("StocksUI fully deactivated");
+		}
+		/*private void OnDestroy()
 		{
 			if (_stockWindow != null)
 			{
 				_stockWindow.Close();
 			}
-		}
+		}*/
 	}
 	public class StocksButton
 	{
@@ -316,12 +368,7 @@ namespace Software_Inc_Stocks_Mod
 				WindowManager.FindElementPath("MainPanel/Holder/MainBottomPanel/Finance/ButtonPanel").gameObject,
 				new Rect(0f, 0f, 100f, 50f),
 				new Rect(0f, 0f, 0f, 0f));
-
 			return button;
-
-			
 		}
-
-
 	}
 }

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Diagnostics;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -19,101 +18,180 @@ namespace Software_Inc_Stocks_Mod
 
 		public override void OnActivate()
 		{
-			utils.DebugConsoleWrite("Activated");
-			DebugConsoleCommands();
-			SceneManager.sceneLoaded += OnLoad;
-			if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToString() == "MainScene")
+			try
 			{
-				InitUI();
-			}
-		}
-		public override void OnDeactivate()
-		{
-			SceneManager.sceneLoaded -= OnLoad;
-			RemoveConsoleCommands();
-			DestroyUI();
-			utils.DebugConsoleWrite("Deactivated");
-		}
-		public void Start()
-		{
-			/*utils.DebugConsoleWrite("Start called");
-			SceneManager.sceneLoaded += OnLoad;
-			if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name.ToString() == "MainScene")
-			{
-				InitUI();
-			}*/
-		}
-		public void DebugConsoleCommands()
-		{
-			DevConsole.Console.AddCommand(new Command("getstocks", utils.ConsoleGetStocks, "List stocks owned by the player company (verbose)"));
-			DevConsole.Console.AddCommand(new Command("dumpmarket", utils.ConsoleDumpMarket, "List all market companies with id, shares and current price"));
-			DevConsole.Console.AddCommand(new Command<string, uint, uint>("stocks", utils.ConsoleStocksOps, "(B)uy or (S)ell <shares> of company with <companyId> immediately (verbose)"));
-			DevConsole.Console.AddCommand(new Command("quit", utils.ConsoleQuit, "Quit the game"));
-		}
-		public void RemoveConsoleCommands()
-		{
-			DevConsole.Console.RemoveCommand("getstocks");
-			DevConsole.Console.RemoveCommand("dumpmarket");
-			DevConsole.Console.RemoveCommand("stocks");
-			DevConsole.Console.RemoveCommand("quit");
-		}
-		private void OnLoad(Scene scene, LoadSceneMode mode)
-		{
-			utils.DebugConsoleWrite($"OnLoad called with scene: {scene.name.ToString()} | and mode: {mode.ToString()}");
-			if (isActiveAndEnabled)
-			{
-				Loaded = false;
-				switch (scene.name)
+				utils.DebugConsoleWrite("OnActivate called");
+
+				DebugConsoleCommands();
+
+				SceneManager.sceneLoaded += OnLoad;
+				utils.DebugConsoleWrite("Scene loaded listener added");
+
+				if (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "MainScene")
 				{
-					case "MainMenu":
-						DestroyUI();
-						break;
-					case "MainScene":
-						InitUI();
-						break;
-					default:
-						goto case "MainMenu";
+					InitUI();
 				}
 			}
+			catch (Exception ex)
+			{
+				utils.ConsoleWrite($"OnActivate exception: {ex}");
+			}
 		}
+
+		public override void OnDeactivate()
+		{
+			try
+			{
+				utils.DebugConsoleWrite("OnDeactivate called");
+
+				SceneManager.sceneLoaded -= OnLoad;
+				utils.DebugConsoleWrite("Scene loaded listener removed");
+
+				RemoveConsoleCommands();
+				utils.DebugConsoleWrite("Console commands removed");
+
+				DestroyUI();
+				utils.DebugConsoleWrite("UI destroyed");
+
+				utils.DebugConsoleWrite("Deactivated successfully");
+			}
+			catch (Exception ex)
+			{
+				utils.ConsoleWrite($"OnDeactivate exception: {ex}");
+			}
+		}
+
+		public void DebugConsoleCommands()
+		{
+			try
+			{
+				utils.DebugConsoleWrite("Adding console commands");
+
+				DevConsole.Console.AddCommand(new Command("getstocks", utils.ConsoleGetStocks, "List stocks owned by the player company (verbose)"));
+				DevConsole.Console.AddCommand(new Command("dumpmarket", utils.ConsoleDumpMarket, "List all market companies with id, shares and current price"));
+				DevConsole.Console.AddCommand(new Command<string, uint, uint>("stocks", utils.ConsoleStocksOps, "(B)uy or (S)ell <shares> of company with <companyId> immediately (verbose)"));
+				DevConsole.Console.AddCommand(new Command("quit", utils.ConsoleQuit, "Quit the game"));
+
+				utils.DebugConsoleWrite("Console commands added successfully");
+			}
+			catch (Exception ex)
+			{
+				utils.ConsoleWrite($"DebugConsoleCommands exception: {ex}");
+			}
+		}
+
+		public void RemoveConsoleCommands()
+		{
+			try
+			{
+				utils.DebugConsoleWrite("Removing console commands");
+
+				DevConsole.Console.RemoveCommand("getstocks");
+				DevConsole.Console.RemoveCommand("dumpmarket");
+				DevConsole.Console.RemoveCommand("stocks");
+				DevConsole.Console.RemoveCommand("quit");
+
+				utils.DebugConsoleWrite("Console commands removed successfully");
+			}
+			catch (Exception ex)
+			{
+				utils.ConsoleWrite($"RemoveConsoleCommands exception: {ex}");
+			}
+		}
+
+		private void OnLoad(Scene scene, LoadSceneMode mode)
+		{
+			try
+			{
+				utils.DebugConsoleWrite($"OnLoad called with scene: {scene.name}, mode: {mode}");
+
+				if (isActiveAndEnabled)
+				{
+					Loaded = false;
+
+					switch (scene.name)
+					{
+						case "MainMenu":
+							utils.DebugConsoleWrite("Destroying UI for MainMenu");
+							DestroyUI();
+							break;
+						case "MainScene":
+							utils.DebugConsoleWrite("Initializing UI for MainScene");
+							InitUI();
+							break;
+						default:
+							utils.DebugConsoleWrite("Unknown scene, destroying UI");
+							DestroyUI();
+							break;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				utils.ConsoleWrite($"OnLoad exception: {ex}");
+				utils.DebugConsoleWrite("Destroying UI due to exception");
+				DestroyUI();
+			}
+		}
+
 		private void InitUI()
 		{
-			utils.DebugConsoleWrite("InitUI called");
+			try
+			{
+				utils.DebugConsoleWrite("InitUI called");
 
-			if (_stocksUI == null)
-			{
-				GameObject stocksUIGO = new GameObject("StocksUI", typeof(StocksUI));
-				stocksUIGO.hideFlags = HideFlags.HideAndDontSave;
-				_stocksUI = stocksUIGO.GetComponent<StocksUI>();
-				utils.DebugConsoleWrite("Stocks UI created");
-			}
+				if (_stocksUI == null)
+				{
+					GameObject stocksUIGO = new GameObject("StocksUI", typeof(StocksUI));
+					stocksUIGO.hideFlags = HideFlags.HideAndDontSave;
+					_stocksUI = stocksUIGO.GetComponent<StocksUI>();
+					_stocksUI.IsDestroyed = false;
+					utils.DebugConsoleWrite("Stocks UI created");
+				}
 
-			if (StockButton == null)
-			{
-				StockButton = StocksButton.stocksButton(() => _stocksUI.Toggle());
-				utils.DebugConsoleWrite("Stocks button created and linked to UI toggle");
+				if (StockButton == null)
+				{
+					StockButton = StocksButton.stocksButton(() => _stocksUI?.Toggle());
+					utils.DebugConsoleWrite("Stocks button created and linked to UI toggle");
+				}
+				else
+				{
+					StockButton.onClick.RemoveAllListeners();
+					StockButton.onClick.AddListener(() => _stocksUI?.Toggle());
+					utils.DebugConsoleWrite("Stocks button callback updated");
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				StockButton.onClick.RemoveAllListeners();
-				StockButton.onClick.AddListener(() => _stocksUI.Toggle());
-				utils.DebugConsoleWrite("Stocks button callback updated");
+				utils.ConsoleWrite($"InitUI exception: {ex}");
 			}
 		}
+
 		private void DestroyUI()
 		{
-			if (_stocksUI != null)
+			try
 			{
-				UnityEngine.Object.Destroy(_stocksUI.gameObject);
-				_stocksUI = null;
+				if (_stocksUI != null)
+				{
+					_stocksUI.Deactivate();
+					_stocksUI.enabled = false;  // <- stops Update() from running
+					Destroy(_stocksUI.gameObject);
+					utils.DebugConsoleWrite("Stocks UI destroyed");
+				}
+
+				if (StockButton != null)
+				{
+					StockButton.onClick.RemoveAllListeners();
+					Destroy(StockButton.gameObject);
+					utils.DebugConsoleWrite("Stocks button destroyed");
+				}
 			}
-			if (StockButton != null)
+			catch (Exception ex)
 			{
-				UnityEngine.Object.Destroy(StockButton.gameObject);
-				StockButton = null;
-				utils.DebugConsoleWrite("Stocks button destroyed");
+				utils.ConsoleWrite($"DestroyUI exception: {ex}");
 			}
 		}
+
+
 	}
 }
-
