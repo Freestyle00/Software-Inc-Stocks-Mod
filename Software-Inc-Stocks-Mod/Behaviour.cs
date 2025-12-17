@@ -80,28 +80,43 @@ namespace Software_Inc_Stocks_Mod
 		{
 			utils.DebugConsoleWrite("InitUI called");
 
-			GameObject stocksUIGO = new GameObject("StocksUI", typeof(StocksUI));
-			stocksUIGO.hideFlags = HideFlags.HideAndDontSave;
-			_stocksUI = stocksUIGO.GetComponent<StocksUI>();
+			// Only create the Stocks UI if it doesn't exist
+			if (_stocksUI == null)
+			{
+				GameObject stocksUIGO = new GameObject("StocksUI", typeof(StocksUI));
+				stocksUIGO.hideFlags = HideFlags.HideAndDontSave;
+				_stocksUI = stocksUIGO.GetComponent<StocksUI>();
+				utils.DebugConsoleWrite("Stocks UI created");
+			}
 
+			// Always create or update the button
 			if (StockButton == null)
 			{
 				StockButton = StocksButton.stocksButton(() => _stocksUI.Toggle());
 				utils.DebugConsoleWrite("Stocks button created and linked to UI toggle");
+			}
+			else
+			{
+				// Update callback if button already exists
+				StockButton.onClick.RemoveAllListeners();
+				StockButton.onClick.AddListener(() => _stocksUI.Toggle());
+				utils.DebugConsoleWrite("Stocks button callback updated");
 			}
 		}
 		private void DestroyUI()
 		{
 			if (_stocksUI != null)
 			{
-				Destroy(_stocksUI.gameObject);
-				Destroy(_stocksUI);
+				UnityEngine.Object.Destroy(_stocksUI.gameObject);
 				_stocksUI = null;
 			}
+
+			// Destroy the button
 			if (StockButton != null)
 			{
-				Destroy(StockButton.gameObject);
+				UnityEngine.Object.Destroy(StockButton.gameObject);
 				StockButton = null;
+				utils.DebugConsoleWrite("Stocks button destroyed");
 			}
 		}
 	}
